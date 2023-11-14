@@ -43,14 +43,25 @@ def create_domain_record(domain: str, domain_list: list) -> str:
 
 
 def update_ip_record_by_port(uid: str, ip: str, ports: list) -> int:
-    collection = db['ip_record']
-    result = collection.find_one({"_id": uid})
-
-    result['ips'][ip] = {
-        'ports': ports,
-    }
-
-    update_result = collection.update_one({'_id': uid}, {'$set': result})
-    return update_result.modified_count
+    result = get_record_result('ip_record', uid)
+    result['ips'][ip] = {'ports': ports}
+    update_count = update_record('ip_record', uid, result)
+    return update_count
 
 
+def update_domain_record_by_web_info(uid: str, web_infos: list) -> int:
+    result = get_record_result('domain_record', uid)
+    for web_info in web_infos:
+        result['subdomains'][web_info['url']] = {'web_info': web_info}
+    update_count = update_record('domain_record', uid, result)
+    return update_count
+
+
+def get_record_result(col_name: str, uid: str) -> dict:
+    collection = db[col_name]
+    return collection.find_one({"_id": uid})
+
+
+def update_record(col_name: str, uid: str, result: dict) -> int:
+    collection = db[col_name]
+    return collection.update_one({'_id': uid}, {'$set': result}).modified_count

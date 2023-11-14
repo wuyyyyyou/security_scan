@@ -1,16 +1,34 @@
-# 这是一个示例 Python 脚本。
-
-# 按 ⌃R 执行或将其替换为您的代码。
-# 按 双击 ⇧ 在所有地方搜索类、文件、工具窗口、操作和设置。
-
-
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 ⌘F8 切换断点。
+from worker.tool_scan import *
+from db.dao import *
+from app_logger.app_log import logger
 
 
-# 按装订区域中的绿色按钮以运行脚本。
+def process():
+    # 先暂时写死
+    host = '180.169.95.0/24'
+    domain = 'erp.chinaums.com'
+
+    try:
+        # 1. nmap扫描存活IP
+        ip_list = nmap_ping(host)
+        ip_record_id = create_ip_record(ip_list)
+        # 2. masscan扫描存活IP的端口，耗时巨大暂时不开
+        # for ip in ip_list:
+        #     ports = port_scan(ip)
+        #     update_ip_record_by_port(ip_record_id, ip, ports)
+
+        # 3. oneforall扫描子域名
+        subdomain_list = oneforall_scan(domain)
+        domain_record_id = create_domain_record(domain, subdomain_list)
+
+        # 4. web信息扫描
+        web_infos = web_info_scan(subdomain_list)
+        update_domain_record_by_web_info(domain_record_id, web_infos)
+
+
+    except Exception as e:
+        logger.error(f'报错:{e}')
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+    process()

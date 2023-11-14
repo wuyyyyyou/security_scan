@@ -1,11 +1,18 @@
 import json
 import os
+import glob
 import subprocess
 
 import xmltodict
 import tempfile
 from app_logger.app_log import logger
 import pandas as pd
+from worker import current_dir
+
+# 根据环境配置
+oneforall_dir = '/Users/leyouming/company_program/scan_tool/OneForAll'
+masscan_dir = '/Users/leyouming/company_program/scan_tool/masscan/bin'
+finger_dir = '/Users/leyouming/company_program/scan_tool/Finger'
 
 
 def nmap_ping(host: str) -> list:
@@ -63,7 +70,6 @@ def oneforall_scan(target: str) -> list:
     :param target:
     :return:
     """
-    oneforall_dir = '/Users/leyouming/company_program/scan_tool/OneForAll'
     oneforall_path = f'{oneforall_dir}/oneforall.py'
     oneforall_result_path = f'{oneforall_dir}/results/{get_oneforall_result_filename(target)}.csv'
 
@@ -91,18 +97,19 @@ def get_oneforall_result_filename(s: str) -> str:
 
 def get_oneforall_result(result_path: str) -> list:
     df = pd.read_csv(result_path)
-    subdomains = df['subdomain'].unique()
+    subdomains = df['url'].unique()
     subdomain_list = subdomains.tolist()
+    os.remove(result_path)
     return subdomain_list
 
 
-def port_scan(ip: str):
+def port_scan(ip: str) -> list:
     """
     调用masscan，进行端口扫描
     :param ip:
     :return:
     """
-    masscan_dir = '/Users/leyouming/company_program/scan_tool/masscan/bin'
+
     masscan_path = f'{masscan_dir}/masscan'
 
     with tempfile.NamedTemporaryFile(delete=False) as temp:
@@ -140,3 +147,46 @@ def port_scan(ip: str):
     except Exception as e:
         logger.error(f'masscan扫描失败，错误:{e}')
         return []
+
+
+def web_info_scan(domains: list) -> list:
+    tmp_txt_path = os.path.join(current_dir, 'tmp.txt')
+
+    finger_path = f'{finger_dir}/Finger.py'
+    json_dir = f'{finger_dir}/output'
+
+    with open(tmp_txt_path, 'w') as file:
+        file.write('\n'.join(domains))
+
+    try:
+        cmd = ['python', finger_path, '-f', tmp_txt_path, '-o', 'json']
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=1200)
+        if result.returncode == 0:
+            logger.debug(f'web指纹检测成功')
+            logger.debug(f'{result.stdout}')
+
+            # 处理数据
+            jsons = get_json_path(json_dir)
+            json_path = jsons[0]
+
+            with open(json_path, 'r') as f:
+                json_data = json.load(f)
+
+            # 删除多的json
+            for j_path in jsons:
+                os.remove(j_path)
+
+            return json_data
+
+        else:
+            logger.debug(f'web指纹检测失败')
+            logger.debug(f'报错:{result.stderr}')
+    except Exception as e:
+        logger.error(f'web指纹检测失败，错误:{e}')
+        return []
+
+
+def get_json_path(dir: str) -> list:
+    return glob.glob(os.path.join(dir, '*.json'))
+
+

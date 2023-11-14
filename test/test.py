@@ -44,6 +44,22 @@ class MyTestCase(unittest.TestCase):
             ['80', '443', '8888']
         )
 
+    def test5(self):
+        a = web_info_scan([
+            'http://ad.chinaums.com',
+            'https://ad.chinaums.com',
+            'https://adm.ielc.chinaums.com',
+            'http://adm.ielc.chinaums.com',
+            'https://ads.chinaums.com',
+            'http://ads.chinaums.com'
+             ])
+        print(a)
+
+    def test6(self):
+        a = get_json_path('/Users/leyouming/company_program/scan_tool/Finger/output')
+        for f in a:
+            os.remove(f)
+
 
 if __name__ == '__main__':
     unittest.main()
