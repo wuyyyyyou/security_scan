@@ -42,3 +42,15 @@ def create_domain_record(domain: str, domain_list: list) -> str:
     return insert_result.inserted_id
 
 
+def update_ip_record_by_port(uid: str, ip: str, ports: list) -> int:
+    collection = db['ip_record']
+    result = collection.find_one({"_id": uid})
+
+    result['ips'][ip] = {
+        'ports': ports,
+    }
+
+    update_result = collection.update_one({'_id': uid}, {'$set': result})
+    return update_result.modified_count
+
+

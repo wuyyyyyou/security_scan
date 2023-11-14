@@ -57,7 +57,7 @@ def nmap_ping(host: str) -> list:
         return []
 
 
-def oneforall_scan(target: str):
+def oneforall_scan(target: str) -> list:
     """
     调用oneforall进行子域名扫描
     :param target:
@@ -78,6 +78,7 @@ def oneforall_scan(target: str):
 
     except Exception as e:
         logger.error(f'OneForAll调用失败:{e}')
+        return []
 
 
 def get_oneforall_result_filename(s: str) -> str:
@@ -93,3 +94,49 @@ def get_oneforall_result(result_path: str) -> list:
     subdomains = df['subdomain'].unique()
     subdomain_list = subdomains.tolist()
     return subdomain_list
+
+
+def port_scan(ip: str):
+    """
+    调用masscan，进行端口扫描
+    :param ip:
+    :return:
+    """
+    masscan_dir = '/Users/leyouming/company_program/scan_tool/masscan/bin'
+    masscan_path = f'{masscan_dir}/masscan'
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        output_file = temp.name
+
+    cmd = [masscan_path, '-p0-65535', '-oJ', output_file, ip, '--max-rate', '500']
+    try:
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
+        if result.returncode == 0:
+
+            logger.debug(f'{ip}检测成功')
+            logger.debug(f'{result.stdout}')
+
+            with open(output_file, 'r') as file:
+                json_data = file.read()
+
+            if json_data == '':
+                logger.debug(f'{ip}没有端口')
+                return []
+
+            else:
+                result_json = json.loads(json_data)
+                os.remove(output_file)
+                logger.debug(f'检测全部结果是:{result_json}')
+                ports = []
+                for ip in result_json:
+                    ports.extend([str(port['port']) for port in ip['ports']])
+
+            return ports
+
+        else:
+            logger.debug(f'{ip}检测失败')
+            logger.debug(f'报错:{result.stderr}')
+            return []
+    except Exception as e:
+        logger.error(f'masscan扫描失败，错误:{e}')
+        return []

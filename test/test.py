@@ -33,6 +33,17 @@ class MyTestCase(unittest.TestCase):
         l = get_oneforall_result(f'/Users/leyouming/company_program/scan_tool/OneForAll/results/{file_name}')
         create_domain_record('erp.chinaums.com', l)
 
+    def test3(self):
+        ports = port_scan('180.169.95.99')
+        print(ports)
+
+    def test4(self):
+        update_ip_record_by_port(
+            '469dd780-5516-4b0a-b1a6-9013f61ec57f',
+            '180.169.95.99',
+            ['80', '443', '8888']
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
