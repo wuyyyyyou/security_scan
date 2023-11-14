@@ -24,6 +24,15 @@ class MyTestCase(unittest.TestCase):
         target = 'erp.chinaums.com'
         oneforall_scan(target)
 
+    def test1(self):
+        s = get_oneforall_result_filename('erp.chinaums.com')
+        print(s)
+
+    def test2(self):
+        file_name = f'{get_oneforall_result_filename("erp.chinaums.com")}.csv'
+        l = get_oneforall_result(f'/Users/leyouming/company_program/scan_tool/OneForAll/results/{file_name}')
+        create_domain_record('erp.chinaums.com', l)
+
 
 if __name__ == '__main__':
     unittest.main()

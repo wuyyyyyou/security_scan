@@ -5,6 +5,7 @@ import subprocess
 import xmltodict
 import tempfile
 from app_logger.app_log import logger
+import pandas as pd
 
 
 def nmap_ping(host: str) -> list:
@@ -62,12 +63,33 @@ def oneforall_scan(target: str):
     :param target:
     :return:
     """
-    oneforall_path = '/Users/leyouming/company_program/scan_tool/OneForAll/oneforall.py'
+    oneforall_dir = '/Users/leyouming/company_program/scan_tool/OneForAll'
+    oneforall_path = f'{oneforall_dir}/oneforall.py'
+    oneforall_result_path = f'{oneforall_dir}/results/{get_oneforall_result_filename(target)}.csv'
 
     cmd = ['python', oneforall_path, '--target', target, '--brute', 'True', 'run']
     try:
+        logger.debug(f'OneForAll开始检测')
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
         logger.debug(result.stdout)
+        logger.debug(f'OneForAll检测完毕')
+        # 处理数据
+        return get_oneforall_result(oneforall_result_path)
 
     except Exception as e:
         logger.error(f'OneForAll调用失败:{e}')
+
+
+def get_oneforall_result_filename(s: str) -> str:
+    parts = s.split('.')
+    if len(parts) > 2:
+        return '.'.join(parts[-2:])
+    else:
+        return s
+
+
+def get_oneforall_result(result_path: str) -> list:
+    df = pd.read_csv(result_path)
+    subdomains = df['subdomain'].unique()
+    subdomain_list = subdomains.tolist()
+    return subdomain_list
