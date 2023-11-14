@@ -1,8 +1,6 @@
 import json
 import os
 import subprocess
-from collections import OrderedDict
-from typing import Any
 
 import xmltodict
 import tempfile
@@ -56,3 +54,20 @@ def nmap_ping(host: str) -> list:
     except Exception as e:
         logger.error(f'nmapIP扫描失败，错误:{e}')
         return []
+
+
+def oneforall_scan(target: str):
+    """
+    调用oneforall进行子域名扫描
+    :param target:
+    :return:
+    """
+    oneforall_path = '/Users/leyouming/company_program/scan_tool/OneForAll/oneforall.py'
+
+    cmd = ['python', oneforall_path, '--target', target, '--brute', 'True', 'run']
+    try:
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
+        logger.debug(result.stdout)
+
+    except Exception as e:
+        logger.error(f'OneForAll调用失败:{e}')

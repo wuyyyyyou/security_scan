@@ -20,6 +20,10 @@ class MyTestCase(unittest.TestCase):
         result = find_ip_record('469dd780-5516-4b0a-b1a6-9013f61ec57f')
         print(result)
 
+    def test_one_for_all(self):
+        target = 'erp.chinaums.com'
+        oneforall_scan(target)
+
 
 if __name__ == '__main__':
     unittest.main()
