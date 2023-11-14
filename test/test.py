@@ -60,6 +60,15 @@ class MyTestCase(unittest.TestCase):
         for f in a:
             os.remove(f)
 
+    def test7(self):
+        a = get_certificate('www.baidu.com')
+        print(a)
+
+    def test8(self):
+        urls = ["http://example.com", "https://example.com", "ftp://example.com", "example.com"]
+        for url in urls:
+            print(remove_http(url))
+
 
 if __name__ == '__main__':
     unittest.main()

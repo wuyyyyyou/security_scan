@@ -1,7 +1,12 @@
 import json
 import os
 import glob
+import re
+import socket
+import ssl
 import subprocess
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 
 import xmltodict
 import tempfile
@@ -190,3 +195,22 @@ def get_json_path(dir: str) -> list:
     return glob.glob(os.path.join(dir, '*.json'))
 
 
+def get_certificate(host: str):
+    """
+    获取网站的https证书信息
+    :param host:
+    :return:
+    """
+    host = remove_http(host)
+    context = ssl.create_default_context()
+    conn = socket.create_connection((host, 443))
+    sock = context.wrap_socket(conn, server_hostname=host)
+    cert = sock.getpeercert()
+    sock.close()
+    return cert
+
+
+def remove_http(url):
+    if re.match(r'http[s]?://', url):
+        return re.sub(r'http[s]?://', '', url)
+    return url
