@@ -26,6 +26,7 @@ def find_ip_record(uid: str) -> dict:
 
 
 def create_domain_record(domain: str, domain_list: list) -> str:
+    domain_list = [str(item) for item in domain_list]
     domain_list.sort()
     domain_list_dict = {key: {} for key in domain_list}
 

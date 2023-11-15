@@ -1,5 +1,6 @@
 import pandas as pd
 from db.dao import *
+from worker.tool_scan import *
 import json
 
 
@@ -54,3 +55,15 @@ def del_strigula(dic: dict):
     for key, value in dic.items():
         if value == '-':
             dic[key] = ''
+
+
+def count_domain(uid: str):
+    result = get_record_result('domain_record', uid)
+    subdomains = result['subdomains']
+
+    subdomain_set = set()
+    for subdomain in subdomains.keys():
+        subdomain = remove_http(subdomain)
+        subdomain_set.add(subdomain)
+
+    print(len(subdomain_set))

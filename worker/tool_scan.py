@@ -340,7 +340,7 @@ def get_certificate(host: str):
     return cert
 
 
-def remove_http(url):
+def remove_http(url: str) -> str:
     if re.match(r'http[s]?://', url):
         return re.sub(r'http[s]?://', '', url)
     return url

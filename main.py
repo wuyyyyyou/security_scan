@@ -1,3 +1,5 @@
+import traceback
+
 from worker.tool_scan import *
 from db.dao import *
 from app_logger.app_log import logger
@@ -27,6 +29,7 @@ def domain_process():
 
     except Exception as e:
         logger.error(f'报错:{e}')
+        traceback.print_exc()
 
 
 def port_process():
@@ -56,7 +59,9 @@ def port_process():
 
     except Exception as e:
         logger.error(f'报错:{e}')
+        traceback.print_exc()
 
 
 if __name__ == '__main__':
-    port_process()
+    # port_process()
+    domain_process()
