@@ -88,7 +88,7 @@ def nmap_server(host: str, port: list) -> dict:
     logger.debug(f'扫描命令:{cmd}')
 
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=1200)
         if result.returncode == 0:
 
             with open(output_file, 'r') as file:
@@ -190,7 +190,7 @@ def port_scan(ip: str) -> list:
 
     cmd = [masscan_path, '-p0-65535', '-oJ', output_file, ip, '--max-rate', '100']
     try:
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=1200)
         if result.returncode == 0:
 
             logger.debug(f'{ip}检测成功')
@@ -217,6 +217,68 @@ def port_scan(ip: str) -> list:
             logger.debug(f'{ip}检测失败')
             logger.debug(f'报错:{result.stderr}')
             return []
+    except Exception as e:
+        logger.error(f'masscan扫描失败，错误:{e}')
+        return []
+
+
+def port_scan2(ip: str) -> list:
+    """
+    调用masscan，进行端口扫描，实时输出masscan信息的版本
+    这个有bug先不用
+    :param ip:
+    :return:
+    """
+
+    masscan_path = f'{masscan_dir}/masscan'
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        output_file = temp.name
+
+    cmd = [masscan_path, '-p0-65535', '-oJ', output_file, ip, '--max-rate', '100']
+    try:
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as proc:
+            try:
+                while True:
+                    output = proc.stdout.readline()
+                    if proc.poll() is not None and output == '':
+                        break
+                    if output:
+                        logger.debug(output.strip())
+
+                stdout, stderr = proc.communicate()
+
+                if proc.returncode == 0:
+                    logger.debug(f'{ip}检测成功')
+
+                    with open(output_file, 'r') as file:
+                        json_data = file.read()
+
+                    if json_data == '':
+                        logger.debug(f'{ip}没有端口')
+                        return []
+
+                    else:
+                        result_json = json.loads(json_data)
+                        os.remove(output_file)
+                        ports = []
+                        for ip in result_json:
+                            ports.extend([str(port['port']) for port in ip['ports']])
+
+                    logger.debug(f'检测结果是:{ports}')
+                    return ports
+
+                else:
+                    logger.debug(f'{ip}检测失败')
+                    logger.debug(f'报错:{stderr}')
+                    return []
+
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                stdout, stderr = proc.communicate()
+                logger.error(f"Masscan 检测超时: {stderr}")
+                return []
+
     except Exception as e:
         logger.error(f'masscan扫描失败，错误:{e}')
         return []

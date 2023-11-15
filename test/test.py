@@ -78,6 +78,10 @@ class MyTestCase(unittest.TestCase):
         a = nmap_server('180.169.95.99', '80,443,8888,25025,49154'.split(','))
         print(a)
 
+    def test11(self):
+        a = port_scan2('180.169.95.99')
+        print(a)
+
 
 if __name__ == '__main__':
     unittest.main()

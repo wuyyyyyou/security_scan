@@ -52,6 +52,13 @@ def update_ip_record_by_port(uid: str, ip: str, ports: list) -> int:
     return update_count
 
 
+def update_ip_ports_info(uid: str, ip: str, port_info: dict) -> int:
+    result = get_record_result('ip_record', uid)
+    result['ips'][ip]['ports'] = port_info
+    update_count = update_record('ip_record', uid, result)
+    return update_count
+
+
 def update_domain_record_by_web_info(uid: str, web_infos: list) -> int:
     result = get_record_result('domain_record', uid)
     for web_info in web_infos:
