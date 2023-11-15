@@ -69,6 +69,11 @@ class MyTestCase(unittest.TestCase):
         for url in urls:
             print(remove_http(url))
 
+    def test9(self):
+        subdomain_dict = delete_empty_domain('1916d244-1dcc-4fc1-a3b4-588c7dfd719d')
+        subdomain_dict = get_domains_certificate(subdomain_dict)
+        update_domain_record_by_subdomains('1916d244-1dcc-4fc1-a3b4-588c7dfd719d', subdomain_dict)
+
 
 if __name__ == '__main__':
     unittest.main()

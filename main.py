@@ -25,6 +25,13 @@ def process():
         web_infos = web_info_scan(subdomain_list)
         update_domain_record_by_web_info(domain_record_id, web_infos)
 
+        # 去掉不存活的域名
+        subdomain_dict = delete_empty_domain(domain_record_id)
+
+        # 6. 获取网页证书
+        subdomain_dict = get_domains_certificate(subdomain_dict)
+        update_domain_record_by_subdomains(domain_record_id, subdomain_dict)
+
 
     except Exception as e:
         logger.error(f'报错:{e}')

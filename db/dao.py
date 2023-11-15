@@ -57,6 +57,25 @@ def update_domain_record_by_web_info(uid: str, web_infos: list) -> int:
     return update_count
 
 
+def update_domain_record_by_subdomains(uid: str, subdomains: dict) -> int:
+    result = get_record_result('domain_record', uid)
+    result['subdomains'] = subdomains
+    update_count = update_record('domain_record', uid, result)
+    return update_count
+
+
+def delete_empty_domain(uid: str) -> dict:
+    result = get_record_result('domain_record', uid)
+    subdomains = result['subdomains']
+    new_subdomains = {}
+    for subdomain, web_info in subdomains.items():
+        if web_info != {}:
+            new_subdomains[subdomain] = web_info
+    result['subdomains'] = new_subdomains
+    update_count = update_record('domain_record', uid, result)
+    return new_subdomains
+
+
 def get_record_result(col_name: str, uid: str) -> dict:
     collection = db[col_name]
     return collection.find_one({"_id": uid})

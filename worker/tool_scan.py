@@ -203,7 +203,7 @@ def get_certificate(host: str):
     """
     host = remove_http(host)
     context = ssl.create_default_context()
-    conn = socket.create_connection((host, 443))
+    conn = socket.create_connection((host, 443), timeout=3)
     sock = context.wrap_socket(conn, server_hostname=host)
     cert = sock.getpeercert()
     sock.close()
@@ -214,3 +214,24 @@ def remove_http(url):
     if re.match(r'http[s]?://', url):
         return re.sub(r'http[s]?://', '', url)
     return url
+
+
+def get_domains_certificate(subdomains: dict) -> dict:
+    """
+    获取子域名的证书信息
+    :param subdomains:
+    :return:
+    """
+    all_count = len(subdomains)
+    complete_count = 0
+    for subdomain in subdomains.keys():
+        try:
+            logger.debug(f'获取子域名"{subdomain}"的证书，进度{complete_count}/{all_count}')
+            cert = get_certificate(subdomain)
+            subdomains[subdomain]['cert'] = cert
+        except Exception as e:
+            logger.error(f'获取子域名"{subdomain}"的证书失败，错误:{e}')
+        finally:
+            complete_count += 1
+
+    return subdomains
