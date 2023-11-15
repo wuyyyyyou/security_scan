@@ -1,6 +1,7 @@
 import unittest
 from worker.tool_scan import *
 from db.dao import *
+from worker.db_to_excle import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -81,6 +82,9 @@ class MyTestCase(unittest.TestCase):
     def test11(self):
         a = port_scan2('180.169.95.99')
         print(a)
+
+    def test12(self):
+        gen_domain_excel('987c7e21-9de9-40ee-baf9-3c8b4a0a8fb5', 'domain_1700033774.xlsx')
 
 
 if __name__ == '__main__':

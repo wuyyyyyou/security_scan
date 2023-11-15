@@ -59,4 +59,4 @@ def port_process():
 
 
 if __name__ == '__main__':
-    domain_process()
+    port_process()
