@@ -94,6 +94,7 @@ def nmap_server(host: str, port: list) -> dict:
             with open(output_file, 'r') as file:
                 xml_data = file.read()
             result_json = xmltodict.parse(xml_data)
+            os.remove(output_file)
 
             result_dict = {}
 
@@ -198,6 +199,7 @@ def port_scan(ip: str) -> list:
 
             with open(output_file, 'r') as file:
                 json_data = file.read()
+            os.remove(output_file)
 
             if json_data == '':
                 logger.debug(f'{ip}没有端口')
@@ -205,7 +207,6 @@ def port_scan(ip: str) -> list:
 
             else:
                 result_json = json.loads(json_data)
-                os.remove(output_file)
                 logger.debug(f'检测全部结果是:{result_json}')
                 ports = []
                 for ip in result_json:
@@ -253,6 +254,7 @@ def port_scan2(ip: str) -> list:
 
                     with open(output_file, 'r') as file:
                         json_data = file.read()
+                    os.remove(output_file)
 
                     if json_data == '':
                         logger.debug(f'{ip}没有端口')
@@ -260,7 +262,6 @@ def port_scan2(ip: str) -> list:
 
                     else:
                         result_json = json.loads(json_data)
-                        os.remove(output_file)
                         ports = []
                         for ip in result_json:
                             ports.extend([str(port['port']) for port in ip['ports']])
