@@ -69,6 +69,74 @@ def nmap_ping(host: str) -> list:
         return []
 
 
+def nmap_server(host: str, port: list) -> dict:
+    """
+    通过nmap扫描端口的服务
+    :param host:
+    :param port:
+    :return:
+    """
+
+    # port为空的情况
+    if len(port) == 0:
+        return {}
+
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        output_file = temp.name
+
+    cmd = ['nmap', '-p', ','.join(port), '-oX', output_file, host]
+    logger.debug(f'扫描命令:{cmd}')
+
+    try:
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
+        if result.returncode == 0:
+
+            with open(output_file, 'r') as file:
+                xml_data = file.read()
+            result_json = xmltodict.parse(xml_data)
+
+            result_dict = {}
+
+            # 只扫描一个port的情况
+            if len(port) == 1:
+                port = result_json['nmaprun']['host']['ports']['port']
+                if 'service' in port:
+                    result_dict[port['@portid']] = {
+                        'protocol': port['@protocol'],
+                        'service': port['service']['@name'],
+                    }
+                else:
+                    result_dict[port['@portid']] = {
+                        'protocol': port['@protocol'],
+                        'service': '',
+                    }
+
+
+            # 多个port的情况
+            else:
+                for port in result_json['nmaprun']['host']['ports']['port']:
+                    if 'service' in port:
+                        result_dict[port['@portid']] = {
+                            'protocol': port['@protocol'],
+                            'service': port['service']['@name'],
+                        }
+                    else:
+                        result_dict[port['@portid']] = {
+                            'protocol': port['@protocol'],
+                            'service': '',
+                        }
+
+            return result_dict
+
+        else:
+            logger.debug(f'{host}检测失败')
+            logger.debug(f'报错:{result.stderr}')
+            return {}
+    except Exception as e:
+        logger.error(f'nmapIP扫描失败，错误:{e}')
+        return {}
+
+
 def oneforall_scan(target: str) -> list:
     """
     调用oneforall进行子域名扫描
@@ -120,7 +188,7 @@ def port_scan(ip: str) -> list:
     with tempfile.NamedTemporaryFile(delete=False) as temp:
         output_file = temp.name
 
-    cmd = [masscan_path, '-p0-65535', '-oJ', output_file, ip, '--max-rate', '500']
+    cmd = [masscan_path, '-p0-65535', '-oJ', output_file, ip, '--max-rate', '100']
     try:
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600)
         if result.returncode == 0:

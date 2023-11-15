@@ -44,7 +44,10 @@ def create_domain_record(domain: str, domain_list: list) -> str:
 
 def update_ip_record_by_port(uid: str, ip: str, ports: list) -> int:
     result = get_record_result('ip_record', uid)
-    result['ips'][ip] = {'ports': ports}
+    ports.sort()
+    port_list_dict = {key: {} for key in ports}
+
+    result['ips'][ip] = {'ports': port_list_dict}
     update_count = update_record('ip_record', uid, result)
     return update_count
 

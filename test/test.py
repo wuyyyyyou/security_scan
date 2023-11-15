@@ -74,6 +74,10 @@ class MyTestCase(unittest.TestCase):
         subdomain_dict = get_domains_certificate(subdomain_dict)
         update_domain_record_by_subdomains('1916d244-1dcc-4fc1-a3b4-588c7dfd719d', subdomain_dict)
 
+    def test10(self):
+        a = nmap_server('180.169.95.99', '80,443,8888,25025,49154'.split(','))
+        print(a)
+
 
 if __name__ == '__main__':
     unittest.main()

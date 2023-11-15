@@ -13,9 +13,9 @@ def process():
         ip_list = nmap_ping(host)
         ip_record_id = create_ip_record(ip_list)
         # 2. masscan扫描存活IP的端口，耗时巨大暂时不开
-        # for ip in ip_list:
-        #     ports = port_scan(ip)
-        #     update_ip_record_by_port(ip_record_id, ip, ports)
+        for ip in ip_list:
+            ports = port_scan(ip)
+            update_ip_record_by_port(ip_record_id, ip, ports)
 
         # 3. oneforall扫描子域名
         subdomain_list = oneforall_scan(domain)
